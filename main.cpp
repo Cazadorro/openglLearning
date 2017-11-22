@@ -13,6 +13,7 @@
 #include "glutil/geometry.h"
 #include "glutil/RawImage.h"
 #include "glutil/Texture2D.h"
+#include "glutil/VertexBufferObject.h"
 
 #include <iostream>
 
@@ -108,16 +109,21 @@ int main() {
             glm::vec3(1.5f, 0.2f, -1.5f),
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
-    unsigned int VBO, VAO;
+   // unsigned int VBO, VAO;
+    unsigned int VAO;
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+
+    //glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_verticies), cube_verticies,
-                 GL_STATIC_DRAW);
+//    // set up vertex data (and buffer(s)) and configure vertex attributes
+//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_verticies), cube_verticies,
+//                 GL_STATIC_DRAW);
+    VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies, GL_STATIC_DRAW);
+
+    VBO.bind();
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
@@ -210,7 +216,7 @@ int main() {
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    //glDeleteBuffers(1, &VBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
