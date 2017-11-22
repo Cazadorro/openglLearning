@@ -1,0 +1,12 @@
+//
+// Created by shae on 11/21/17.
+//
+
+#ifndef GRIDMAPDISPLAY_STBI_IMAGE_IMP_H
+#define GRIDMAPDISPLAY_STBI_IMAGE_IMP_H
+
+#define STB_IMAGE_IMPLEMENTATION
+
+#include <stb_image.h>
+
+#endif //GRIDMAPDISPLAY_STBI_IMAGE_IMP_H
