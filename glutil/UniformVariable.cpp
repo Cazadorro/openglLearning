@@ -19,7 +19,7 @@ UniformVariable::operator GLint() const {
 }
 
 bool
-UniformVariable::isUniformParent(const ShaderProgram &shader_program) const {
+UniformVariable::isParentProgram(const ShaderProgram &shader_program) const {
     return m_parent_shader_program == static_cast<GLuint>(shader_program);
 }
 

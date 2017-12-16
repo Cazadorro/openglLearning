@@ -14,6 +14,7 @@
 #include "glutil/RawImage.h"
 #include "glutil/Texture2D.h"
 #include "glutil/VertexBufferObject.h"
+#include "glutil/VertexAttributeLocation.h"
 
 #include <iostream>
 
@@ -93,6 +94,9 @@ int main() {
     UniformVariable u_view(shader_program, "view");
     UniformVariable u_model(shader_program, "model");
 
+    VertexAttributeLocation l_aPos(shader_program, "aPos");
+    VertexAttributeLocation l_aTexCoord(shader_program, "aTexCoord");
+
     RawImage container_image("../resources/textures/container.png");
     RawImage awesomeface_image("../resources/textures/awesomeface.png");
 
@@ -109,30 +113,26 @@ int main() {
             glm::vec3(1.5f, 0.2f, -1.5f),
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
-   // unsigned int VBO, VAO;
+
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
-
-    //glGenBuffers(1, &VBO);
-
     glBindVertexArray(VAO);
 
-//    // set up vertex data (and buffer(s)) and configure vertex attributes
-//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_verticies), cube_verticies,
-//                 GL_STATIC_DRAW);
-    VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies, GL_STATIC_DRAW);
+    VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies,
+                           GL_STATIC_DRAW);
 
     VBO.bind();
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+    glVertexAttribPointer(static_cast<GLint>(l_aPos), 3, GL_FLOAT, GL_FALSE,
+                          5 * sizeof(float),
                           (void *) 0);
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(static_cast<GLint>(l_aPos));
     // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+    glVertexAttribPointer(static_cast<GLint>(l_aTexCoord), 2, GL_FLOAT,
+                          GL_FALSE, 5 * sizeof(float),
                           (void *) (3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(static_cast<GLint>(l_aTexCoord));
 
 
     Texture2D texture0;
@@ -216,7 +216,6 @@ int main() {
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
-    //glDeleteBuffers(1, &VBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

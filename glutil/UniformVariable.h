@@ -20,7 +20,7 @@ public:
 
     explicit operator GLint() const;
 
-    bool isUniformParent(const ShaderProgram &shader_program) const;
+    bool isParentProgram(const ShaderProgram &shader_program) const;
 
 private:
 

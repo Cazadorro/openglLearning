@@ -32,93 +32,93 @@ ShaderProgram::operator GLuint() const{
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const GLfloat &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform1f(static_cast<GLint>(uniform), value);
 }
 
 void
 ShaderProgram::setUniform(const UniformVariable &uniform, const GLint &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform1i(static_cast<GLint>(uniform), value);
 }
 
 void
 ShaderProgram::setUniform(const UniformVariable &uniform, const GLuint &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform1ui(static_cast<GLint>(uniform), value);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::vec2 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform2fv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::ivec2 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform2iv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::uvec2 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform2uiv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::vec3 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform3fv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::ivec3 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform3iv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::uvec3 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform3uiv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::vec4 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform4fv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::ivec4 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform4iv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::uvec4 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniform4uiv(static_cast<GLint>(uniform), 1, &value[0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::mat2 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniformMatrix2fv(static_cast<GLint>(uniform), 1, GL_FALSE,
                        &value[0][0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::mat3 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniformMatrix3fv(static_cast<GLint>(uniform), 1, GL_FALSE,
                        &value[0][0]);
 }
 
 void ShaderProgram::setUniform(const UniformVariable &uniform,
                                const glm::mat4 &value) {
-    assert(uniform.isUniformParent(*this));
+    assert(uniform.isParentProgram(*this));
     glUniformMatrix4fv(static_cast<GLint>(uniform), 1, GL_FALSE,
                        &value[0][0]);
 }
