@@ -1,0 +1,11 @@
+//
+// Created by Shae Bolt on 12/16/2017.
+//
+
+#ifndef GRIDMAPDISPLAY_ROOT_DIRECTORY_H
+#define GRIDMAPDISPLAY_ROOT_DIRECTORY_H
+#include <string>
+namespace config {
+    const std::string root_dir = "${CMAKE_SOURCE_DIR}";
+}
+#endif //GRIDMAPDISPLAY_ROOT_DIRECTORY_H

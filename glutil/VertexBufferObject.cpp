@@ -9,16 +9,16 @@
 VertexBufferObject::VertexBufferObject(const GLsizeiptr &size,
                                        const GLvoid *data,
                                        GLenum usage) {
-    GLuint buffer;
-    glGenBuffers(1, &buffer);
-    m_buffer = buffer;
+    GLuint index;
+    glGenBuffers(1, &index);
+    m_index = index;
 
     setData(size, data, usage);
 
 }
 
 void VertexBufferObject::bind() {
-    glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m_index);
 }
 
 void VertexBufferObject::setData(const GLsizeiptr &size, const GLvoid *data,
@@ -33,7 +33,7 @@ void VertexBufferObject::unbindAll() {
 }
 
 VertexBufferObject::~VertexBufferObject() {
-    glDeleteBuffers(1, &m_buffer);
+    glDeleteBuffers(1, &m_index);
 }
 
 void VertexBufferObject::updateData(GLintptr offset, GLsizeiptr size,
@@ -44,5 +44,5 @@ void VertexBufferObject::updateData(GLintptr offset, GLsizeiptr size,
 }
 
 VertexBufferObject::operator GLuint() const {
-    return m_buffer;
+    return m_index;
 }

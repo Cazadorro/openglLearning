@@ -6,7 +6,7 @@
 #define GRIDMAPDISPLAY_TEXTURE2D_H
 
 #include <glad/glad.h>
-#include "RawImage.h"
+#include "Image.h"
 
 class Texture2D {
     GLuint m_texture_enum_name;
@@ -24,7 +24,7 @@ public:
 
     void setParameter(const GLenum &param_name, const GLint &value);
 
-    void setImage(const RawImage &raw_image, GLenum internal_format,
+    void setImage(const Image &raw_image, GLenum internal_format,
                   GLint lod_to_generate = 0);
 
     void generateMipmap();

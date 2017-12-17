@@ -28,7 +28,7 @@ void Texture2D::setParameter(const GLenum &param_name, const GLint &value) {
     Texture2D::unbindAll();
 }
 
-void Texture2D::setImage(const RawImage &raw_image, GLenum internal_format,
+void Texture2D::setImage(const Image &raw_image, GLenum internal_format,
                          GLint lod_to_generate) {
     bind();
     glTexImage2D(GL_TEXTURE_2D, lod_to_generate, internal_format,

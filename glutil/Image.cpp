@@ -3,13 +3,19 @@
 //
 
 #include <glad/glad.h>
-#include "RawImage.h"
+#include "Image.h"
 //#include "stbi_image_imp.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+Image::Image(unsigned char *data, int width, int height, GLenum channels){
+    m_data = data;
+    m_width = width;
+    m_height = height;
+    m_channels = channels;
+}
 
-RawImage::RawImage(const std::string &file_location, const int chosenChannels) {
+Image::Image(const std::string &file_location, const int chosenChannels) {
     int width;
     int height;
     int trueChannels;
@@ -36,22 +42,22 @@ RawImage::RawImage(const std::string &file_location, const int chosenChannels) {
     }
 }
 
-RawImage::~RawImage() {
+Image::~Image() {
     stbi_image_free(m_data);
 }
 
-int RawImage::getWidth() const {
+int Image::getWidth() const {
     return m_width;
 }
 
-int RawImage::getHeight() const {
+int Image::getHeight() const {
     return m_height;
 }
 
-GLenum RawImage::getChannelEnum() const {
+GLenum Image::getChannelEnum() const {
     return m_channels;
 }
 
-const unsigned char *RawImage::getData() const {
+const unsigned char *Image::getData() const {
     return m_data;
 }

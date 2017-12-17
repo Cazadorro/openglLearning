@@ -15,3 +15,7 @@ VertexAttributeLocation::VertexAttributeLocation(
 VertexAttributeLocation::operator GLint() const {
     return m_attribute_location;
 }
+
+VertexAttributeLocation::operator GLuint() const {
+    return static_cast<GLuint>(m_attribute_location);
+}

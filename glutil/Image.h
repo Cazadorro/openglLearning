@@ -11,17 +11,18 @@
 #include <string>
 #include <glm/glm.hpp>
 
-class RawImage {
+class Image {
     int m_width;
     int m_height;
     GLenum m_channels;
     unsigned char *m_data;
 
 public:
-    explicit RawImage(const std::string &file_location,
-                      int channels = 0);
+    Image(unsigned char *data, int width, int height, GLenum channels);
 
-    ~RawImage();
+    explicit Image(const std::string &file_location, int chosenChannels = 0);
+
+    ~Image();
 
     int getWidth() const;
 

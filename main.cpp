@@ -11,10 +11,12 @@
 #include "glutil/ioutil.h"
 #include "glutil/camera.h"
 #include "glutil/geometry.h"
-#include "glutil/RawImage.h"
+#include "glutil/Image.h"
 #include "glutil/Texture2D.h"
 #include "glutil/VertexBufferObject.h"
 #include "glutil/VertexAttributeLocation.h"
+#include "glutil/FileSystem.h"
+#include "glutil/VertexAttributeObject.h"
 
 #include <iostream>
 
@@ -81,8 +83,8 @@ int main() {
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader vertex_shader(readAllText("../shader.vert"), GL_VERTEX_SHADER);
-    Shader fragment_shader(readAllText("../shader.frag"), GL_FRAGMENT_SHADER);
+    Shader vertex_shader(readAllText(filesys::getPathFromRoot("shader.vert")), GL_VERTEX_SHADER);
+    Shader fragment_shader(readAllText(filesys::getPathFromRoot("shader.frag")), GL_FRAGMENT_SHADER);
     ShaderProgram shader_program;
     shader_program.attachShader(vertex_shader);
     shader_program.attachShader(fragment_shader);
@@ -94,11 +96,11 @@ int main() {
     UniformVariable u_view(shader_program, "view");
     UniformVariable u_model(shader_program, "model");
 
-    VertexAttributeLocation l_aPos(shader_program, "aPos");
-    VertexAttributeLocation l_aTexCoord(shader_program, "aTexCoord");
+    VertexAttributeLocation a_aPos(shader_program, "aPos");
+    VertexAttributeLocation a_aTexCoord(shader_program, "aTexCoord");
 
-    RawImage container_image("../resources/textures/container.png");
-    RawImage awesomeface_image("../resources/textures/awesomeface.png");
+    Image container_image(filesys::getPathFromRoot("resources/textures/container.png"));
+    Image awesomeface_image(filesys::getPathFromRoot("resources/textures/awesomeface.png"));
 
     // world space positions of our cubes
     glm::vec3 cubePositions[] = {
@@ -114,26 +116,11 @@ int main() {
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies,
-                           GL_STATIC_DRAW);
-
-    VBO.bind();
-
-    // position attribute
-    glVertexAttribPointer(static_cast<GLint>(l_aPos), 3, GL_FLOAT, GL_FALSE,
-                          5 * sizeof(float),
-                          (void *) 0);
-    glEnableVertexAttribArray(static_cast<GLint>(l_aPos));
-    // texture coord attribute
-    glVertexAttribPointer(static_cast<GLint>(l_aTexCoord), 2, GL_FLOAT,
-                          GL_FALSE, 5 * sizeof(float),
-                          (void *) (3 * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLint>(l_aTexCoord));
-
+    VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies, GL_STATIC_DRAW);
+    VertexAttributeObject VAO;
+    VAO.setVertexBufferObject(VBO);
+    VAO.setAttributeData(a_aPos, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+    VAO.setAttributeData(a_aTexCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 3 * sizeof(float));
 
     Texture2D texture0;
     texture0.setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -194,7 +181,7 @@ int main() {
         shader_program.setUniform(u_view, view);
 
         // render boxes
-        glBindVertexArray(VAO);
+        VAO.bind();
         for (unsigned int i = 0; i < 10; i++) {
             // calculate the model matrix for each object and pass it to shader before drawing
             glm::mat4 model = glm::mat4(1.0f);
@@ -212,10 +199,6 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

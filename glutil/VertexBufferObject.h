@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 
 class VertexBufferObject {
-    GLuint m_buffer;
+    GLuint m_index;
 public:
     VertexBufferObject(const GLsizeiptr &size, const GLvoid *data,
                        GLenum usage);
