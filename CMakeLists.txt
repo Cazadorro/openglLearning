@@ -3,6 +3,9 @@ project(GridMapDisplay)
 
 set(CMAKE_CXX_STANDARD 14)
 
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
 
 #add_library(GLAD "glad.c")
 #set(LIBS ${LIBS} GLAD dl)
@@ -11,10 +14,13 @@ set(SOURCE_FILES main.cpp include/glad/glad.h glad.c glutil/camera.cpp glutil/ca
 
 #find_package(GLFW3 REQUIRED)
 #message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
-add_executable(GridMapDisplay ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 #-lglfw3
 
-target_link_libraries(GridMapDisplay glfw3 rt m dl Xrandr Xinerama Xxf86vm Xext Xcursor Xrender Xfixes X11 pthread xcb Xau Xdmcp GL Xi )
-
-
-target_link_libraries(GridMapDisplay ${LIBS})
+if(LINUX)
+    message("using linux link targets")
+    target_link_libraries(${PROJECT_NAME} glfw3 rt m dl Xrandr Xinerama Xxf86vm Xext Xcursor Xrender Xfixes X11 pthread xcb Xau Xdmcp GL Xi )
+elseif(WIN32)
+    message("using windows link targets")
+    target_link_libraries(${PROJECT_NAME} -lglfw3 -lopengl32)
+endif()
