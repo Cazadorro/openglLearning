@@ -9,11 +9,9 @@
 #include "glutil.h"
 #include "glfwutil.h"
 
-#include <functional>
 #include <iostream>
 
 void framebuffer_size_callback(glfwutil::Window &window, int width, int height);
-
 
 void mouse_callback(glfwutil::Window &window, double xpos, double ypos, Camera &camera);
 
@@ -35,9 +33,8 @@ int main() {
     glfwutil::Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
     // timing
-    float lastFrame = 0.0f;
-    float deltaTime = 0.0f;    // time between current frame and last frame
-    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+    Camera camera(2.5f, 0.1f, 45.0f, glm::vec3(0.0f, 0.0f, 3.0f));
 
     auto f_mouse_callback = [&](glfwutil::Window &window, double xoffset, double yoffset) {
         return mouse_callback(window, xoffset, yoffset, camera);
@@ -132,11 +129,12 @@ int main() {
 
     // render loop
     // -----------
+    float lastFrame = 0.0f;
     while (!window.shouldClose()) {
         // per-frame time logic
         // --------------------
         float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
+        float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         // input
@@ -156,7 +154,7 @@ int main() {
         shader_program.use();
 
         // pass projection matrix to shader (note that in this case it could change every frame)
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
+        glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()),
                                                 (float) SCR_WIDTH /
                                                 (float) SCR_HEIGHT, 0.1f,
                                                 100.0f);
@@ -173,6 +171,7 @@ int main() {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
+
             model = glm::rotate(model, glm::radians(angle),
                                 glm::vec3(1.0f, 0.3f, 0.5f));
             shader_program.setUniform(u_model, model);
