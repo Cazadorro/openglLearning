@@ -5,70 +5,56 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "glutil/Shader.h"
-#include "glutil/ShaderProgram.h"
-#include "glutil/UniformVariable.h"
-#include "glutil/ioutil.h"
-#include "glutil/camera.h"
-#include "glutil/geometry.h"
-#include "glutil/Image.h"
-#include "glutil/Texture2D.h"
-#include "glutil/VertexBufferObject.h"
-#include "glutil/VertexAttributeLocation.h"
-#include "glutil/FileSystem.h"
-#include "glutil/VertexAttributeObject.h"
 
+#include "glutil.h"
+#include "glfwutil.h"
+
+#include <functional>
 #include <iostream>
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void framebuffer_size_callback(glfwutil::Window &window, int width, int height);
 
-void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+void mouse_callback(glfwutil::Window &window, double xpos, double ypos, Camera &camera);
 
-void processInput(GLFWwindow *window, Camera &camera, float deltaTime);
+void scroll_callback(glfwutil::Window &window, double xoffset, double yoffset, Camera &camera);
+
+void processInput(glfwutil::Window &window, Camera &camera, float deltaTime);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-
 
 int main() {
+    // glfw: initialize and configure
+    // ------------------------------
+
+    glfwutil::initWindowManager(3, 3, true);
+
+    glfwutil::Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
     // timing
     float lastFrame = 0.0f;
     float deltaTime = 0.0f;    // time between current frame and last frame
+    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-    // glfw: initialize and configure
-    // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    auto f_mouse_callback = [&](glfwutil::Window &window, double xoffset, double yoffset) {
+        return mouse_callback(window, xoffset, yoffset, camera);
+    };
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
+    auto f_scroll_callback = [&](glfwutil::Window &window, double xoffset, double yoffset) {
+        return scroll_callback(window, xoffset, yoffset, camera);
+    };
 
-    // glfw window creation
-    // --------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL",
-                                          nullptr, nullptr);
-    if (window == nullptr) {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    window.makeCurrentContext();
+    window.setFrameBufferCallback(framebuffer_size_callback);
+    window.setMouseCallback(f_mouse_callback);
+    window.setScrollCallback(f_scroll_callback);
+
 
     // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -96,8 +82,8 @@ int main() {
     UniformVariable u_view(shader_program, "view");
     UniformVariable u_model(shader_program, "model");
 
-    VertexAttributeLocation a_aPos(shader_program, "aPos");
-    VertexAttributeLocation a_aTexCoord(shader_program, "aTexCoord");
+    VertexAttributeLocation a_inPos(shader_program, "inPos");
+    VertexAttributeLocation a_inTexCoord(shader_program, "inTexCoord");
 
     Image container_image(filesys::getPathFromRoot("resources/textures/container.png"));
     Image awesomeface_image(filesys::getPathFromRoot("resources/textures/awesomeface.png"));
@@ -119,8 +105,8 @@ int main() {
     VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies, GL_STATIC_DRAW);
     VertexAttributeObject VAO;
     VAO.setVertexBufferObject(VBO);
-    VAO.setAttributeData(a_aPos, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
-    VAO.setAttributeData(a_aTexCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 3 * sizeof(float));
+    VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+    VAO.setAttributeData(a_inTexCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 3 * sizeof(float));
 
     Texture2D texture0;
     texture0.setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -146,7 +132,7 @@ int main() {
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window)) {
+    while (!window.shouldClose()) {
         // per-frame time logic
         // --------------------
         float currentFrame = glfwGetTime();
@@ -196,7 +182,7 @@ int main() {
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
+        window.swapBuffers();
         glfwPollEvents();
     }
 
@@ -208,24 +194,33 @@ int main() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window, Camera &camera, float deltaTime) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+void processInput(glfwutil::Window &window, Camera &camera, float deltaTime) {
+    if (window.getKey(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        window.setShouldClose(true);
+    }
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_W) == GLFW_PRESS) {
         camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    }
+
+    if (window.getKey(GLFW_KEY_S) == GLFW_PRESS) {
         camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    }
+
+    if (window.getKey(GLFW_KEY_A) == GLFW_PRESS) {
         camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    }
+
+    if (window.getKey(GLFW_KEY_D) == GLFW_PRESS) {
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    }
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    // make sure the viewport matches the new window dimensions; note that width and 
+void framebuffer_size_callback(glfwutil::Window &window, int width, int height) {
+    // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
@@ -233,7 +228,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+void mouse_callback(glfwutil::Window &window, double xpos, double ypos, Camera &camera) {
     static double lastX = SCR_WIDTH / 2.0f;
     static double lastY = SCR_HEIGHT / 2.0f;
     static bool firstMouse = true;
@@ -255,6 +250,6 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+void scroll_callback(glfwutil::Window &window, double xoffset, double yoffset, Camera &camera) {
     camera.ProcessMouseScroll(yoffset);
 }

@@ -19,7 +19,7 @@ std::string readAllText(const std::string &file_path) {
         return sstream.str();
     }
     catch (std::ifstream::failure &exception) {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
+        std::cout << "ERROR::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
         std::cout << exception.what() << std::endl;
     }
     return std::string();

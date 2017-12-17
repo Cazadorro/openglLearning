@@ -7,7 +7,7 @@
 
 #include "Image.h"
 
-namespace l1gl{
+namespace glfwutil{
     namespace ResourceIO{
 
     }
