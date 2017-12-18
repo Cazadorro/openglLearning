@@ -119,7 +119,8 @@ int main() {
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
     auto lamp_color = glm::vec3(1.0f, 1.0f, 1.0f);
-    glm::vec3 lamp_position(1.2f, 1.0f, 2.0f);
+    glm::vec3 lamp_base_position(0.0f, 1.0f, 2.0f);
+    glm::vec3 lamp_position(lamp_base_position);
 
     cube_shader_program.use();
     cube_shader_program.setUniform(u_objectColor, glm::vec3(1.0f, 0.5f, 0.31f));
@@ -164,12 +165,14 @@ int main() {
 
         glm::mat4 cube_model = glm::mat4(1.0f);
 
-        glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(cube_model)));
+        glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(view * cube_model)));
+        float time_move_val = currentFrame/4;
+        lamp_position = lamp_base_position + glm::vec3(cosf(time_move_val), sinf(time_move_val), 0);
         cube_shader_program.use();
         cube_shader_program.setUniform(u_projection, projection);
         cube_shader_program.setUniform(u_view, view);
         cube_shader_program.setUniform(u_model, cube_model);
-        //cube_shader_program.setUniform(u_light_position, camera.getPosition());
+        cube_shader_program.setUniform(u_light_position, lamp_position);
         cube_shader_program.setUniform(u_view_position, camera.getPosition());
         cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
         cube_VAO.bind();
