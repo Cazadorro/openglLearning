@@ -85,6 +85,7 @@ int main() {
     UniformVariable u_view(shader_program, "view");
     UniformVariable u_model(shader_program, "model");
 
+    UniformVariable u_lightColor_lamp(lamp_shader_program, "lightColor");
     UniformVariable u_projection_lamp(lamp_shader_program, "projection");
     UniformVariable u_view_lamp(lamp_shader_program, "view");
     UniformVariable u_model_lamp(lamp_shader_program, "model");
@@ -108,9 +109,13 @@ int main() {
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
+    auto lamp_color = glm::vec3(1.0f, 0.5f, 1.0f);
     shader_program.use();
     shader_program.setUniform(u_objectColor, glm::vec3(1.0f, 0.5f, 0.31f));
-    shader_program.setUniform(u_lightColor, glm::vec3(1.0f, 1.0f, 1.0f));
+    shader_program.setUniform(u_lightColor, lamp_color);
+
+    lamp_shader_program.use();
+    lamp_shader_program.setUniform(u_lightColor_lamp, lamp_color);
 
     // render loop
     // -----------
