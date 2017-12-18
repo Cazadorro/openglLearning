@@ -66,24 +66,31 @@ int main() {
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader vertex_shader(readAllText(filesys::getPathFromRoot("shaders/light1.vert")), GL_VERTEX_SHADER);
-    Shader fragment_shader(readAllText(filesys::getPathFromRoot("shaders/light1.frag")), GL_FRAGMENT_SHADER);
+    Shader cube_vertex_shader(readAllText(filesys::getPathFromRoot("shaders/light1.vert")), GL_VERTEX_SHADER);
+    Shader lamp_vertex_shader(readAllText(filesys::getPathFromRoot("shaders/light1lamp.vert")), GL_VERTEX_SHADER);
+    Shader cube_fragment_shader(readAllText(filesys::getPathFromRoot("shaders/light1.frag")), GL_FRAGMENT_SHADER);
     Shader lamp_fragment_shader(readAllText(filesys::getPathFromRoot("shaders/light1lamp.frag")), GL_FRAGMENT_SHADER);
-    ShaderProgram shader_program;
-    shader_program.attachShader(vertex_shader);
-    shader_program.attachShader(fragment_shader);
-    shader_program.link();
+    ShaderProgram cube_shader_program;
+    cube_shader_program.attachShader(cube_vertex_shader);
+    cube_shader_program.attachShader(cube_fragment_shader);
+    cube_shader_program.link();
 
     ShaderProgram lamp_shader_program;
-    lamp_shader_program.attachShader(vertex_shader);
+    lamp_shader_program.attachShader(lamp_vertex_shader);
     lamp_shader_program.attachShader(lamp_fragment_shader);
     lamp_shader_program.link();
 
-    UniformVariable u_objectColor(shader_program, "objectColor");
-    UniformVariable u_lightColor(shader_program, "lightColor");
-    UniformVariable u_projection(shader_program, "projection");
-    UniformVariable u_view(shader_program, "view");
-    UniformVariable u_model(shader_program, "model");
+    UniformVariable u_objectColor(cube_shader_program, "objectColor");
+    UniformVariable u_lightColor(cube_shader_program, "lightColor");
+    UniformVariable u_ambient_strength(cube_shader_program, "ambient_strength");
+    UniformVariable u_specular_strength(cube_shader_program, "specular_strength");
+    UniformVariable u_specular_shine(cube_shader_program, "specular_shine");
+    UniformVariable u_light_position(cube_shader_program, "light_position");
+    UniformVariable u_projection(cube_shader_program, "projection");
+    UniformVariable u_view(cube_shader_program, "view");
+    UniformVariable u_model(cube_shader_program, "model");
+    UniformVariable u_normal_matrix(cube_shader_program, "normal_matrix");
+    UniformVariable u_view_position(cube_shader_program, "view_position");
 
     UniformVariable u_lightColor_lamp(lamp_shader_program, "lightColor");
     UniformVariable u_projection_lamp(lamp_shader_program, "projection");
@@ -92,27 +99,35 @@ int main() {
 
 
     // need two versions?
-    VertexAttributeLocation a_inPos(shader_program, "inPos");
+    VertexAttributeLocation a_inPos(cube_shader_program, "inPos");
+    VertexAttributeLocation a_inNormal(cube_shader_program, "inNormal");
     VertexAttributeLocation a_inPos_lamp(lamp_shader_program, "inPos");
 
 
 
-    VertexBufferObject VBO(sizeof(cube_verticies), cube_verticies, GL_STATIC_DRAW);
+    VertexBufferObject VBO(sizeof(cube_verticies_normals), cube_verticies_normals, GL_STATIC_DRAW);
     VertexAttributeObject cube_VAO;
     cube_VAO.setVertexBufferObject(VBO);
-    cube_VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+    cube_VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+    cube_VAO.setAttributeData(a_inNormal, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 3* sizeof(float));
 
     VertexAttributeObject lamp_VAO;
     lamp_VAO.setVertexBufferObject(VBO);
-    lamp_VAO.setAttributeData(a_inPos_lamp, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+    lamp_VAO.setAttributeData(a_inPos_lamp, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
-    auto lamp_color = glm::vec3(1.0f, 0.5f, 1.0f);
-    shader_program.use();
-    shader_program.setUniform(u_objectColor, glm::vec3(1.0f, 0.5f, 0.31f));
-    shader_program.setUniform(u_lightColor, lamp_color);
+    auto lamp_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 lamp_position(1.2f, 1.0f, 2.0f);
+
+    cube_shader_program.use();
+    cube_shader_program.setUniform(u_objectColor, glm::vec3(1.0f, 0.5f, 0.31f));
+    cube_shader_program.setUniform(u_lightColor, lamp_color);
+    cube_shader_program.setUniform(u_ambient_strength, 0.1f);
+    cube_shader_program.setUniform(u_specular_strength, 0.5f);
+    cube_shader_program.setUniform(u_specular_shine, 32);
+    cube_shader_program.setUniform(u_light_position, lamp_position);
 
     lamp_shader_program.use();
     lamp_shader_program.setUniform(u_lightColor_lamp, lamp_color);
@@ -120,7 +135,7 @@ int main() {
     // render loop
     // -----------
     float lastFrame = 0.0f;
-    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
     while (!window.shouldClose()) {
         // per-frame time logic
         // --------------------
@@ -138,7 +153,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // activate shader
-        shader_program.use();
+        cube_shader_program.use();
 
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(camera.getZoomRad(),
@@ -148,15 +163,20 @@ int main() {
         glm::mat4 view = camera.GetViewMatrix();
 
         glm::mat4 cube_model = glm::mat4(1.0f);
-        shader_program.use();
-        shader_program.setUniform(u_projection, projection);
-        shader_program.setUniform(u_view, view);
-        shader_program.setUniform(u_model, cube_model);
+
+        glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(cube_model)));
+        cube_shader_program.use();
+        cube_shader_program.setUniform(u_projection, projection);
+        cube_shader_program.setUniform(u_view, view);
+        cube_shader_program.setUniform(u_model, cube_model);
+        //cube_shader_program.setUniform(u_light_position, camera.getPosition());
+        cube_shader_program.setUniform(u_view_position, camera.getPosition());
+        cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
         cube_VAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glm::mat4 lamp_model = glm::mat4(1.0f);
-        lamp_model = glm::translate(lamp_model, lightPos);
+        lamp_model = glm::translate(lamp_model, lamp_position);
         lamp_model = glm::scale(lamp_model, glm::vec3(0.2f));
         lamp_shader_program.use();
         lamp_shader_program.setUniform(u_projection_lamp, projection);

@@ -57,6 +57,8 @@ public:
 
     float getZoomRad();
 
+    glm::vec3& getPosition();
+
 private:
     // Calculates the front vector from the Camera's (updated) Eular Angles
     void updateCameraVectors();
