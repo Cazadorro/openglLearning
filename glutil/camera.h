@@ -55,6 +55,8 @@ public:
 
     float getZoom();
 
+    float getZoomRad();
+
 private:
     // Calculates the front vector from the Camera's (updated) Eular Angles
     void updateCameraVectors();

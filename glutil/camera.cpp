@@ -89,3 +89,7 @@ float Camera::getZoom() {
     return m_zoom;
 }
 
+float Camera::getZoomRad() {
+    return glm::radians(m_zoom);
+}
+
