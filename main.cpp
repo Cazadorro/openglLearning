@@ -81,14 +81,16 @@ int main() {
     lamp_shader_program.link();
 
 
-    UniformVariable u_lightColor(cube_shader_program, "lightColor");
-
     UniformVariable u_ambient_color(cube_shader_program, "material.ambient_color");
     UniformVariable u_diffuse_color(cube_shader_program, "material.diffuse_color");
     UniformVariable u_specular_color(cube_shader_program, "material.specular_color");
     UniformVariable u_specular_shine(cube_shader_program, "material.specular_shine");
 
-    UniformVariable u_light_position(cube_shader_program, "light_position");
+    UniformVariable u_lamp_position(cube_shader_program, "light.position");
+    UniformVariable u_lamp_ambient_color(cube_shader_program, "light.ambient_color");
+    UniformVariable u_lamp_diffuse_color(cube_shader_program, "light.diffuse_color");
+    UniformVariable u_lamp_specular_color(cube_shader_program, "light.specular_color");
+
     UniformVariable u_projection(cube_shader_program, "projection");
     UniformVariable u_view(cube_shader_program, "view");
     UniformVariable u_model(cube_shader_program, "model");
@@ -126,12 +128,16 @@ int main() {
     glm::vec3 lamp_position(lamp_base_position);
 
     cube_shader_program.use();
-    cube_shader_program.setUniform(u_lightColor, lamp_color);
     cube_shader_program.setUniform(u_ambient_color, glm::vec3(1.0f, 0.5f, 0.31f));
     cube_shader_program.setUniform(u_diffuse_color, glm::vec3(1.0f, 0.5f, 0.31f));
     cube_shader_program.setUniform(u_specular_color, glm::vec3(0.5f, 0.5f, 0.5f));
     cube_shader_program.setUniform(u_specular_shine, 32.0f);
-    cube_shader_program.setUniform(u_light_position, lamp_position);
+
+
+    cube_shader_program.setUniform(u_lamp_ambient_color, glm::vec3(0.2f, 0.2f, 0.2f));
+    cube_shader_program.setUniform(u_lamp_diffuse_color, glm::vec3(0.5f, 0.5f, 0.5f));
+    cube_shader_program.setUniform(u_lamp_specular_color, glm::vec3(1.0f, 1.0f, 1.0f));
+
 
     lamp_shader_program.use();
     lamp_shader_program.setUniform(u_lightColor_lamp, lamp_color);
@@ -169,13 +175,19 @@ int main() {
         glm::mat4 cube_model = glm::mat4(1.0f);
 
         glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(view * cube_model)));
+
+
+
         float time_move_val = currentFrame/4;
         lamp_position = lamp_base_position + glm::vec3(cosf(time_move_val), sinf(time_move_val), 0);
+
+
         cube_shader_program.use();
+
         cube_shader_program.setUniform(u_projection, projection);
         cube_shader_program.setUniform(u_view, view);
         cube_shader_program.setUniform(u_model, cube_model);
-        cube_shader_program.setUniform(u_light_position, lamp_position);
+        cube_shader_program.setUniform(u_lamp_position, glm::vec3(view * glm::vec4(lamp_position, 1.0)));
         cube_shader_program.setUniform(u_view_position, camera.getPosition());
         cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
         cube_VAO.bind();
