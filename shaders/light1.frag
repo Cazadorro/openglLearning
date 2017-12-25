@@ -2,7 +2,7 @@
 
 struct Material{
   sampler2D diffuse_color;
-  vec3 specular_color;
+  sampler2D specular_color;
   float specular_shine;
 };
 
@@ -46,7 +46,9 @@ void main()
     vec3 reflect_direction = reflect(-light_direction, surface_normal);
     float specular_value = pow(max(dot(view_direction, reflect_direction), 0.0), material.specular_shine);
 
-    vec3 specular_color = light.specular_color * (material.specular_color * specular_value);
+    vec3 specular_color =
+        light.specular_color * specular_value
+        * vec3(texture(material.specular_color, TexCoord));
 
     vec3 color = ambient_color + diffuse_color + specular_color;
     FragColor = vec4(color, 1.0);

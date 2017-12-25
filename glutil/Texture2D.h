@@ -27,6 +27,8 @@ public:
     void setImage(const Image &raw_image, GLenum internal_format,
                   GLint lod_to_generate = 0);
 
+    void defaultInit(const Image &raw_image, GLenum internal_format);
+
     void generateMipmap();
 
     void bind();

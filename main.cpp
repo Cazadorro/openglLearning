@@ -146,12 +146,12 @@ int main() {
     Image container_image(
             filesys::getPathFromRoot("resources/textures/container2.png"));
     Texture2D texture0;
-    texture0.setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    texture0.setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
-    texture0.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texture0.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texture0.setImage(container_image, GL_RGBA);
-    texture0.generateMipmap();
+    texture0.defaultInit(container_image, GL_RGBA);
+
+    Image container_specular_image(
+            filesys::getPathFromRoot("resources/textures/container2_specular.png"));
+    Texture2D texture1;
+    texture1.defaultInit(container_specular_image, GL_RGBA);
 
 
 
@@ -164,8 +164,7 @@ int main() {
 
     cube_shader_program.use();
     cube_shader_program.setUniform(u_diffuse_color, 0);
-    cube_shader_program.setUniform(u_specular_color,
-                                   glm::vec3(0.5f, 0.5f, 0.5f));
+    cube_shader_program.setUniform(u_specular_color, 1);
     cube_shader_program.setUniform(u_specular_shine, 32.0f);
 
 
@@ -174,7 +173,7 @@ int main() {
     cube_shader_program.setUniform(u_lamp_diffuse_color,
                                    glm::vec3(0.5f, 0.5f, 0.5f));
     cube_shader_program.setUniform(u_lamp_specular_color,
-                                   glm::vec3(1.0f, 1.0f, 1.0f));
+                                   glm::vec3(lamp_color));
 
 
 
@@ -232,6 +231,7 @@ int main() {
         cube_shader_program.setUniform(u_view_position, camera.getPosition());
         cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
         texture0.use(GL_TEXTURE0);
+        texture1.use(GL_TEXTURE1);
         cube_VAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);
 

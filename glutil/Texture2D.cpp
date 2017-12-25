@@ -57,4 +57,13 @@ void Texture2D::use(const GLenum &active_texture) {
     glBindTexture(GL_TEXTURE_2D, m_texture_enum_name);
 }
 
+void Texture2D::defaultInit(const Image &raw_image, GLenum internal_format) {
+    setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    setImage(raw_image, internal_format);
+    generateMipmap();
+}
+
 
