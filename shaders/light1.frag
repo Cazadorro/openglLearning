@@ -3,6 +3,7 @@
 struct Material{
   sampler2D diffuse_color;
   sampler2D specular_color;
+  sampler2D emission_color;
   float specular_shine;
 };
 
@@ -23,7 +24,7 @@ uniform Light light;
 
 in vec3 Normal;
 in vec3 FragPosition;
-in vec2 TexCoord;
+in vec2 TexCoords;
 
 out vec4 FragColor;
 
@@ -33,14 +34,14 @@ void main()
     vec3 surface_normal = normalize(Normal);
 
     vec3 ambient_color =
-        light.ambient_color * vec3(texture(material.diffuse_color, TexCoord));
+        light.ambient_color * vec3(texture(material.diffuse_color, TexCoords));
 
     vec3 light_direction = normalize(light.position - FragPosition);
     float normal_similarity = max(dot(surface_normal, light_direction), 0.0);
 
     vec3 diffuse_color =
         light.diffuse_color * normal_similarity
-        * vec3(texture(material.diffuse_color, TexCoord));
+        * vec3(texture(material.diffuse_color, TexCoords));
 
     vec3 view_direction = normalize(view_position - FragPosition);
     vec3 reflect_direction = reflect(-light_direction, surface_normal);
@@ -48,8 +49,10 @@ void main()
 
     vec3 specular_color =
         light.specular_color * specular_value
-        * vec3(texture(material.specular_color, TexCoord));
+        * vec3(texture(material.specular_color, TexCoords));
+    
+    vec3 emission_color = texture(material.emission_color, TexCoords).rgb;
 
-    vec3 color = ambient_color + diffuse_color + specular_color;
+    vec3 color = ambient_color + diffuse_color + specular_color + emission_color;
     FragColor = vec4(color, 1.0);
 }

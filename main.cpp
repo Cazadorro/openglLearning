@@ -97,6 +97,8 @@ int main() {
                                     "material.diffuse_color");
     UniformVariable u_specular_color(cube_shader_program,
                                      "material.specular_color");
+    UniformVariable u_emission_color(cube_shader_program,
+                                     "material.emission_color");
     UniformVariable u_specular_shine(cube_shader_program,
                                      "material.specular_shine");
 
@@ -149,9 +151,16 @@ int main() {
     texture0.defaultInit(container_image, GL_RGBA);
 
     Image container_specular_image(
-            filesys::getPathFromRoot("resources/textures/container2_specular.png"));
+            filesys::getPathFromRoot(
+                    "resources/textures/container2_specular.png"));
     Texture2D texture1;
     texture1.defaultInit(container_specular_image, GL_RGBA);
+
+    Image container_emission_image(
+            filesys::getPathFromRoot(
+                    "resources/textures/matrix.jpg"));
+    Texture2D texture2;
+    texture2.defaultInit(container_emission_image, GL_RGBA);
 
 
 
@@ -165,6 +174,7 @@ int main() {
     cube_shader_program.use();
     cube_shader_program.setUniform(u_diffuse_color, 0);
     cube_shader_program.setUniform(u_specular_color, 1);
+    cube_shader_program.setUniform(u_emission_color, 2);
     cube_shader_program.setUniform(u_specular_shine, 32.0f);
 
 
@@ -174,7 +184,6 @@ int main() {
                                    glm::vec3(0.5f, 0.5f, 0.5f));
     cube_shader_program.setUniform(u_lamp_specular_color,
                                    glm::vec3(lamp_color));
-
 
 
     lamp_shader_program.use();
@@ -232,6 +241,7 @@ int main() {
         cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
         texture0.use(GL_TEXTURE0);
         texture1.use(GL_TEXTURE1);
+        texture2.use(GL_TEXTURE2);
         cube_VAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
