@@ -14,6 +14,7 @@ class VertexAttributeLocation {
 public:
     VertexAttributeLocation(const ShaderProgram &shader_program,
                             const std::string &variable_name);
+    VertexAttributeLocation(GLint layout_location);
     explicit operator GLint() const;
     explicit operator GLuint() const;
 ;private:

@@ -13,9 +13,11 @@
 
 void framebuffer_size_callback(glfwutil::Window &window, int width, int height);
 
-void mouse_callback(glfwutil::Window &window, double xpos, double ypos, Camera &camera);
+void mouse_callback(glfwutil::Window &window, double xpos, double ypos,
+                    Camera &camera);
 
-void scroll_callback(glfwutil::Window &window, double xoffset, double yoffset, Camera &camera);
+void scroll_callback(glfwutil::Window &window, double xoffset, double yoffset,
+                     Camera &camera);
 
 void processInput(glfwutil::Window &window, Camera &camera, float deltaTime);
 
@@ -36,11 +38,13 @@ int main() {
 
     Camera camera(2.5f, 0.1f, 45.0f, glm::vec3(0.0f, 0.0f, 3.0f));
 
-    auto f_mouse_callback = [&](glfwutil::Window &window, double xoffset, double yoffset) {
+    auto f_mouse_callback = [&](glfwutil::Window &window, double xoffset,
+                                double yoffset) {
         return mouse_callback(window, xoffset, yoffset, camera);
     };
 
-    auto f_scroll_callback = [&](glfwutil::Window &window, double xoffset, double yoffset) {
+    auto f_scroll_callback = [&](glfwutil::Window &window, double xoffset,
+                                 double yoffset) {
         return scroll_callback(window, xoffset, yoffset, camera);
     };
 
@@ -66,10 +70,18 @@ int main() {
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader cube_vertex_shader(readAllText(filesys::getPathFromRoot("shaders/light1.vert")), GL_VERTEX_SHADER);
-    Shader lamp_vertex_shader(readAllText(filesys::getPathFromRoot("shaders/light1lamp.vert")), GL_VERTEX_SHADER);
-    Shader cube_fragment_shader(readAllText(filesys::getPathFromRoot("shaders/light1.frag")), GL_FRAGMENT_SHADER);
-    Shader lamp_fragment_shader(readAllText(filesys::getPathFromRoot("shaders/light1lamp.frag")), GL_FRAGMENT_SHADER);
+    Shader cube_vertex_shader(
+            readAllText(filesys::getPathFromRoot("shaders/light1.vert")),
+            GL_VERTEX_SHADER);
+    Shader lamp_vertex_shader(
+            readAllText(filesys::getPathFromRoot("shaders/light1lamp.vert")),
+            GL_VERTEX_SHADER);
+    Shader cube_fragment_shader(
+            readAllText(filesys::getPathFromRoot("shaders/light1.frag")),
+            GL_FRAGMENT_SHADER);
+    Shader lamp_fragment_shader(
+            readAllText(filesys::getPathFromRoot("shaders/light1lamp.frag")),
+            GL_FRAGMENT_SHADER);
     ShaderProgram cube_shader_program;
     cube_shader_program.attachShader(cube_vertex_shader);
     cube_shader_program.attachShader(cube_fragment_shader);
@@ -81,15 +93,20 @@ int main() {
     lamp_shader_program.link();
 
 
-    UniformVariable u_ambient_color(cube_shader_program, "material.ambient_color");
-    UniformVariable u_diffuse_color(cube_shader_program, "material.diffuse_color");
-    UniformVariable u_specular_color(cube_shader_program, "material.specular_color");
-    UniformVariable u_specular_shine(cube_shader_program, "material.specular_shine");
+    UniformVariable u_diffuse_color(cube_shader_program,
+                                    "material.diffuse_color");
+    UniformVariable u_specular_color(cube_shader_program,
+                                     "material.specular_color");
+    UniformVariable u_specular_shine(cube_shader_program,
+                                     "material.specular_shine");
 
     UniformVariable u_lamp_position(cube_shader_program, "light.position");
-    UniformVariable u_lamp_ambient_color(cube_shader_program, "light.ambient_color");
-    UniformVariable u_lamp_diffuse_color(cube_shader_program, "light.diffuse_color");
-    UniformVariable u_lamp_specular_color(cube_shader_program, "light.specular_color");
+    UniformVariable u_lamp_ambient_color(cube_shader_program,
+                                         "light.ambient_color");
+    UniformVariable u_lamp_diffuse_color(cube_shader_program,
+                                         "light.diffuse_color");
+    UniformVariable u_lamp_specular_color(cube_shader_program,
+                                          "light.specular_color");
 
     UniformVariable u_projection(cube_shader_program, "projection");
     UniformVariable u_view(cube_shader_program, "view");
@@ -106,19 +123,37 @@ int main() {
     // need two versions?
     VertexAttributeLocation a_inPos(cube_shader_program, "inPos");
     VertexAttributeLocation a_inNormal(cube_shader_program, "inNormal");
+    VertexAttributeLocation a_inTexCoords(cube_shader_program, "inTexCoords");
     VertexAttributeLocation a_inPos_lamp(lamp_shader_program, "inPos");
 
 
-
-    VertexBufferObject VBO(sizeof(cube_verticies_normals), cube_verticies_normals, GL_STATIC_DRAW);
+    VertexBufferObject VBO(sizeof(cube_vertices_normals_texcoords),
+                           cube_vertices_normals_texcoords, GL_STATIC_DRAW);
     VertexAttributeObject cube_VAO;
     cube_VAO.setVertexBufferObject(VBO);
-    cube_VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
-    cube_VAO.setAttributeData(a_inNormal, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 3* sizeof(float));
+    cube_VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+                              0);
+    cube_VAO.setAttributeData(a_inNormal, 3, GL_FLOAT, GL_FALSE,
+                              8 * sizeof(float), 3 * sizeof(float));
+    cube_VAO.setAttributeData(a_inTexCoords, 2, GL_FLOAT, GL_FALSE,
+                              8 * sizeof(float), 6 * sizeof(float));
 
     VertexAttributeObject lamp_VAO;
     lamp_VAO.setVertexBufferObject(VBO);
-    lamp_VAO.setAttributeData(a_inPos_lamp, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+    lamp_VAO.setAttributeData(a_inPos_lamp, 3, GL_FLOAT, GL_FALSE,
+                              8 * sizeof(float), 0);
+
+    Image container_image(
+            filesys::getPathFromRoot("resources/textures/container2.png"));
+    Texture2D texture0;
+    texture0.setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texture0.setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture0.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture0.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture0.setImage(container_image, GL_RGBA);
+    texture0.generateMipmap();
+
+
 
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -128,15 +163,19 @@ int main() {
     glm::vec3 lamp_position(lamp_base_position);
 
     cube_shader_program.use();
-    cube_shader_program.setUniform(u_ambient_color, glm::vec3(1.0f, 0.5f, 0.31f));
-    cube_shader_program.setUniform(u_diffuse_color, glm::vec3(1.0f, 0.5f, 0.31f));
-    cube_shader_program.setUniform(u_specular_color, glm::vec3(0.5f, 0.5f, 0.5f));
+    cube_shader_program.setUniform(u_diffuse_color, 0);
+    cube_shader_program.setUniform(u_specular_color,
+                                   glm::vec3(0.5f, 0.5f, 0.5f));
     cube_shader_program.setUniform(u_specular_shine, 32.0f);
 
 
-    cube_shader_program.setUniform(u_lamp_ambient_color, glm::vec3(0.2f, 0.2f, 0.2f));
-    cube_shader_program.setUniform(u_lamp_diffuse_color, glm::vec3(0.5f, 0.5f, 0.5f));
-    cube_shader_program.setUniform(u_lamp_specular_color, glm::vec3(1.0f, 1.0f, 1.0f));
+    cube_shader_program.setUniform(u_lamp_ambient_color,
+                                   glm::vec3(0.2f, 0.2f, 0.2f));
+    cube_shader_program.setUniform(u_lamp_diffuse_color,
+                                   glm::vec3(0.5f, 0.5f, 0.5f));
+    cube_shader_program.setUniform(u_lamp_specular_color,
+                                   glm::vec3(1.0f, 1.0f, 1.0f));
+
 
 
     lamp_shader_program.use();
@@ -174,12 +213,13 @@ int main() {
 
         glm::mat4 cube_model = glm::mat4(1.0f);
 
-        glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(view * cube_model)));
+        glm::mat3 normal_matrix = glm::mat3(
+                glm::transpose(glm::inverse(view * cube_model)));
 
 
-
-        float time_move_val = currentFrame/4;
-        lamp_position = lamp_base_position + glm::vec3(cosf(time_move_val), sinf(time_move_val), 0);
+        float time_move_val = currentFrame / 4;
+        lamp_position = lamp_base_position +
+                        glm::vec3(cosf(time_move_val), sinf(time_move_val), 0);
 
 
         cube_shader_program.use();
@@ -187,9 +227,11 @@ int main() {
         cube_shader_program.setUniform(u_projection, projection);
         cube_shader_program.setUniform(u_view, view);
         cube_shader_program.setUniform(u_model, cube_model);
-        cube_shader_program.setUniform(u_lamp_position, glm::vec3(view * glm::vec4(lamp_position, 1.0)));
+        cube_shader_program.setUniform(u_lamp_position, glm::vec3(
+                view * glm::vec4(lamp_position, 1.0)));
         cube_shader_program.setUniform(u_view_position, camera.getPosition());
         cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
+        texture0.use(GL_TEXTURE0);
         cube_VAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -242,7 +284,8 @@ void processInput(glfwutil::Window &window, Camera &camera, float deltaTime) {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(glfwutil::Window &window, int width, int height) {
+void
+framebuffer_size_callback(glfwutil::Window &window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
@@ -251,7 +294,8 @@ void framebuffer_size_callback(glfwutil::Window &window, int width, int height) 
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(glfwutil::Window &window, double xpos, double ypos, Camera &camera) {
+void mouse_callback(glfwutil::Window &window, double xpos, double ypos,
+                    Camera &camera) {
     static double lastX = SCR_WIDTH / 2.0f;
     static double lastY = SCR_HEIGHT / 2.0f;
     static bool firstMouse = true;
@@ -273,6 +317,7 @@ void mouse_callback(glfwutil::Window &window, double xpos, double ypos, Camera &
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(glfwutil::Window &window, double xoffset, double yoffset, Camera &camera) {
+void scroll_callback(glfwutil::Window &window, double xoffset, double yoffset,
+                     Camera &camera) {
     camera.ProcessMouseScroll(yoffset);
 }

@@ -3,6 +3,7 @@
 //
 
 #include "VertexAttributeLocation.h"
+#include "iostream"
 
 VertexAttributeLocation::VertexAttributeLocation(
         const ShaderProgram &shader_program, const std::string &variable_name) {
@@ -18,4 +19,8 @@ VertexAttributeLocation::operator GLint() const {
 
 VertexAttributeLocation::operator GLuint() const {
     return static_cast<GLuint>(m_attribute_location);
+}
+
+VertexAttributeLocation::VertexAttributeLocation(GLint layout_location) {
+    m_attribute_location = layout_location;
 }
