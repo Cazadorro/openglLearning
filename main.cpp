@@ -8,6 +8,7 @@
 
 #include "glutil.h"
 #include "glfwutil.h"
+#include "noisegenutils.h"
 
 #include <iostream>
 
@@ -70,100 +71,39 @@ int main() {
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader cube_vertex_shader(
-            readAllText(filesys::getPathFromRoot("shaders/light1.vert")),
-            GL_VERTEX_SHADER);
-    Shader lamp_vertex_shader(
-            readAllText(filesys::getPathFromRoot("shaders/light1lamp.vert")),
-            GL_VERTEX_SHADER);
-    Shader cube_fragment_shader(
-            readAllText(filesys::getPathFromRoot("shaders/light1.frag")),
-            GL_FRAGMENT_SHADER);
-    Shader lamp_fragment_shader(
-            readAllText(filesys::getPathFromRoot("shaders/light1lamp.frag")),
-            GL_FRAGMENT_SHADER);
-    ShaderProgram cube_shader_program;
-    cube_shader_program.attachShader(cube_vertex_shader);
-    cube_shader_program.attachShader(cube_fragment_shader);
-    cube_shader_program.link();
+    Shader noise_vertex_shader(readAllText(filesys::getPathFromRoot("shaders/noise_display.vert")),GL_VERTEX_SHADER);
+    Shader noise_fragment_shader(readAllText(filesys::getPathFromRoot("shaders/noise_display.frag")),GL_FRAGMENT_SHADER);
 
-    ShaderProgram lamp_shader_program;
-    lamp_shader_program.attachShader(lamp_vertex_shader);
-    lamp_shader_program.attachShader(lamp_fragment_shader);
-    lamp_shader_program.link();
+    ShaderProgram noise_shader_program;
+    noise_shader_program.attachShader(noise_vertex_shader);
+    noise_shader_program.attachShader(noise_fragment_shader);
+    noise_shader_program.link();
 
+    VertexAttributeLocation a_inPos(noise_shader_program, "inPos");
+    VertexAttributeLocation a_inTexCoord(noise_shader_program, "inTexCoord");
+    UniformVariable u_model(noise_shader_program, "model");
+    UniformVariable u_view(noise_shader_program, "view");
+    UniformVariable u_projection(noise_shader_program, "projection");
+    UniformVariable u_noise_texture(noise_shader_program, "noise_texture");
 
-    UniformVariable u_diffuse_color(cube_shader_program,
-                                    "material.diffuse_color");
-    UniformVariable u_specular_color(cube_shader_program,
-                                     "material.specular_color");
-    UniformVariable u_emission_color(cube_shader_program,
-                                     "material.emission_color");
-    UniformVariable u_specular_shine(cube_shader_program,
-                                     "material.specular_shine");
+    VertexBufferObject VBO(sizeof(quad_verticies_texcoords),
+                           quad_verticies_texcoords, GL_STATIC_DRAW);
+    VertexAttributeObject noise_VAO;
+    noise_VAO.setVertexBufferObject(VBO);
+    noise_VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+    noise_VAO.setAttributeData(a_inTexCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 3 * sizeof(float));
 
-    UniformVariable u_lamp_position(cube_shader_program, "light.position");
-    UniformVariable u_lamp_ambient_color(cube_shader_program,
-                                         "light.ambient_color");
-    UniformVariable u_lamp_diffuse_color(cube_shader_program,
-                                         "light.diffuse_color");
-    UniformVariable u_lamp_specular_color(cube_shader_program,
-                                          "light.specular_color");
+    int width = 1<<10;
+    int height = 1<<10;
+    unsigned char *temp_texture = createTextureMemory(width, height);
+    std::vector<int> indices;
+    std::vector<float> verticies;
+    glm::vec3 scale = {0.01, 0.01, 0.01};
+    mainfunc(width, height, temp_texture, verticies, scale);
 
-    UniformVariable u_projection(cube_shader_program, "projection");
-    UniformVariable u_view(cube_shader_program, "view");
-    UniformVariable u_model(cube_shader_program, "model");
-    UniformVariable u_normal_matrix(cube_shader_program, "normal_matrix");
-    UniformVariable u_view_position(cube_shader_program, "view_position");
-
-    UniformVariable u_lightColor_lamp(lamp_shader_program, "lightColor");
-    UniformVariable u_projection_lamp(lamp_shader_program, "projection");
-    UniformVariable u_view_lamp(lamp_shader_program, "view");
-    UniformVariable u_model_lamp(lamp_shader_program, "model");
-
-
-    // need two versions?
-    VertexAttributeLocation a_inPos(cube_shader_program, "inPos");
-    VertexAttributeLocation a_inNormal(cube_shader_program, "inNormal");
-    VertexAttributeLocation a_inTexCoords(cube_shader_program, "inTexCoords");
-    VertexAttributeLocation a_inPos_lamp(lamp_shader_program, "inPos");
-
-
-    VertexBufferObject VBO(sizeof(cube_vertices_normals_texcoords),
-                           cube_vertices_normals_texcoords, GL_STATIC_DRAW);
-    VertexAttributeObject cube_VAO;
-    cube_VAO.setVertexBufferObject(VBO);
-    cube_VAO.setAttributeData(a_inPos, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                              0);
-    cube_VAO.setAttributeData(a_inNormal, 3, GL_FLOAT, GL_FALSE,
-                              8 * sizeof(float), 3 * sizeof(float));
-    cube_VAO.setAttributeData(a_inTexCoords, 2, GL_FLOAT, GL_FALSE,
-                              8 * sizeof(float), 6 * sizeof(float));
-
-    VertexAttributeObject lamp_VAO;
-    lamp_VAO.setVertexBufferObject(VBO);
-    lamp_VAO.setAttributeData(a_inPos_lamp, 3, GL_FLOAT, GL_FALSE,
-                              8 * sizeof(float), 0);
-
-    Image container_image(
-            filesys::getPathFromRoot("resources/textures/container2.png"));
-    Texture2D texture0;
-    texture0.defaultInit(container_image, GL_RGBA);
-
-    Image container_specular_image(
-            filesys::getPathFromRoot(
-                    "resources/textures/container2_specular.png"));
-    Texture2D texture1;
-    texture1.defaultInit(container_specular_image, GL_RGBA);
-
-    Image container_emission_image(
-            filesys::getPathFromRoot(
-                    "resources/textures/matrix.jpg"));
-    Texture2D texture2;
-    texture2.defaultInit(container_emission_image, GL_RGBA);
-
-
-
+    Image container_image(temp_texture, width, height, GL_RGBA);
+    Texture2D noise_texture;
+    noise_texture.defaultInit(container_image, GL_RGBA);
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
@@ -171,27 +111,15 @@ int main() {
     glm::vec3 lamp_base_position(0.0f, 1.0f, 2.0f);
     glm::vec3 lamp_position(lamp_base_position);
 
-    cube_shader_program.use();
-    cube_shader_program.setUniform(u_diffuse_color, 0);
-    cube_shader_program.setUniform(u_specular_color, 1);
-    cube_shader_program.setUniform(u_emission_color, 2);
-    cube_shader_program.setUniform(u_specular_shine, 32.0f);
-
-
-    cube_shader_program.setUniform(u_lamp_ambient_color,
-                                   glm::vec3(0.2f, 0.2f, 0.2f));
-    cube_shader_program.setUniform(u_lamp_diffuse_color,
-                                   glm::vec3(0.5f, 0.5f, 0.5f));
-    cube_shader_program.setUniform(u_lamp_specular_color,
-                                   glm::vec3(lamp_color));
-
-
-    lamp_shader_program.use();
-    lamp_shader_program.setUniform(u_lightColor_lamp, lamp_color);
+    noise_shader_program.use();
+    noise_shader_program.setUniform(u_noise_texture, 0);
 
     // render loop
     // -----------
     float lastFrame = 0.0f;
+
+
+
 
     while (!window.shouldClose()) {
         // per-frame time logic
@@ -210,7 +138,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // activate shader
-        cube_shader_program.use();
+        noise_shader_program.use();
 
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(camera.getZoomRad(),
@@ -224,36 +152,17 @@ int main() {
         glm::mat3 normal_matrix = glm::mat3(
                 glm::transpose(glm::inverse(view * cube_model)));
 
-
         float time_move_val = currentFrame / 4;
         lamp_position = lamp_base_position +
                         glm::vec3(cosf(time_move_val), sinf(time_move_val), 0);
 
-
-        cube_shader_program.use();
-
-        cube_shader_program.setUniform(u_projection, projection);
-        cube_shader_program.setUniform(u_view, view);
-        cube_shader_program.setUniform(u_model, cube_model);
-        cube_shader_program.setUniform(u_lamp_position, glm::vec3(
-                view * glm::vec4(lamp_position, 1.0)));
-        cube_shader_program.setUniform(u_view_position, camera.getPosition());
-        cube_shader_program.setUniform(u_normal_matrix, normal_matrix);
-        texture0.use(GL_TEXTURE0);
-        texture1.use(GL_TEXTURE1);
-        texture2.use(GL_TEXTURE2);
-        cube_VAO.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glm::mat4 lamp_model = glm::mat4(1.0f);
-        lamp_model = glm::translate(lamp_model, lamp_position);
-        lamp_model = glm::scale(lamp_model, glm::vec3(0.2f));
-        lamp_shader_program.use();
-        lamp_shader_program.setUniform(u_projection_lamp, projection);
-        lamp_shader_program.setUniform(u_view_lamp, view);
-        lamp_shader_program.setUniform(u_model_lamp, lamp_model);
-        lamp_VAO.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        noise_shader_program.use();
+        noise_shader_program.setUniform(u_projection, projection);
+        noise_shader_program.setUniform(u_view, view);
+        noise_shader_program.setUniform(u_model, cube_model);
+        noise_texture.use(GL_TEXTURE0);
+        noise_VAO.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

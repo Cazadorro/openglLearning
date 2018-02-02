@@ -184,4 +184,13 @@ const float cube_vertices_normals_texcoords[] = {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 };
 
+const float quad_verticies_texcoords[] = {
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+};
+
 #endif //GRIDMAPDISPLAY_GEOMETRY_H
